@@ -15,8 +15,8 @@
     "sourceMap": true,
     "composite": true,
     "moduleResolution": "node",
-    "types": ["node", "jest"]
+    "types": ["node"]
   },
   "include": ["src/server/**/*.ts", "src/server/typings/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "src/client"]
+  "exclude": ["node_modules", "dist", "src/client", "src/server/__tests__"]
 }

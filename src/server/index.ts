@@ -145,6 +145,9 @@ if (config.nodeEnv !== 'production') {
   app.get('/api/debug/installations', async (_req, res) => {
     try {
       const db = mongoose.connection.db;
+      if (!db) {
+        return res.status(503).json({ error: 'Database not connected' });
+      }
       const colls = await db.listCollections().toArray();
       const collNames = colls.map((c: any) => c.name);
 
