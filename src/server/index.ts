@@ -264,7 +264,11 @@ app.get('/api/wix/install', async (req, res) => {
     );
 
     logger.info('Wix app installed', { instanceId, hasRefreshToken: !!refreshToken });
-    res.redirect(config.baseUrl || '/');
+
+    // Redirect to dashboard with a JWT so the user lands in an authenticated session
+    const jwtLib = require('jsonwebtoken');
+    const dashToken = jwtLib.sign({ instanceId }, config.jwtSecret, { expiresIn: '2h' });
+    res.redirect(`${config.baseUrl || ''}/?instance=${dashToken}`);
   } catch (err) {
     logger.error('Install callback error', { error: (err as Error).message });
     res.status(500).json({ error: 'Installation failed' });
