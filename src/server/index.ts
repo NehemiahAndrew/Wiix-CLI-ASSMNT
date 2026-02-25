@@ -27,12 +27,24 @@ import widgetRoutes from './routes/widget';
 const app = express();
 
 /* ── Global middleware ── */
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'x-wix-instance'],
+}));
 
 // Bypass ngrok free-tier browser interstitial warning page.
 // Without this, iframe-based loads (Wix dashboard) get stuck on ngrok's splash.
+// Also allow Wix domains to frame this app in their dashboard iframe.
 app.use((_req, res, next) => {
   res.setHeader('ngrok-skip-browser-warning', 'true');
+  // Allow Wix to embed this app in an iframe
+  res.removeHeader('X-Frame-Options');
+  res.setHeader(
+    'Content-Security-Policy',
+    "frame-ancestors 'self' https://*.wix.com https://*.editorx.com https://*.wixsite.com",
+  );
   next();
 });
 
