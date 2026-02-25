@@ -16,7 +16,7 @@ export function getBackendOrigin(): string {
       ? (import.meta as any).env?.VITE_BACKEND_URL
       : undefined;
   return (
-    env || 'https://nontangentially-tristichic-suellen.ngrok-free.dev'
+    env || 'https://wix-cli-assmnt.onrender.com'
   );
 }
 
