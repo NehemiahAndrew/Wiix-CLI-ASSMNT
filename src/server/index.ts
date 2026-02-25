@@ -28,6 +28,14 @@ const app = express();
 
 /* ── Global middleware ── */
 app.use(cors({ origin: true, credentials: true }));
+
+// Bypass ngrok free-tier browser interstitial warning page.
+// Without this, iframe-based loads (Wix dashboard) get stuck on ngrok's splash.
+app.use((_req, res, next) => {
+  res.setHeader('ngrok-skip-browser-warning', 'true');
+  next();
+});
+
 // Stash the raw request buffer so webhook handlers can compute HMAC signatures
 app.use(
   express.json({

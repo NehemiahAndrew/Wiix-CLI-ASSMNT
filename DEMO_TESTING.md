@@ -10,16 +10,16 @@ This document provides everything needed to test the Wix ↔ HubSpot Integration
 
 | Service | Field | Value |
 |---------|-------|-------|
-| **Wix Developer Center** | Login email | `_________________________` |
-| **Wix Developer Center** | Login password | `_________________________` |
+| **Wix Developer Center** | Login email | `nehemiahandrew78@gmail.com` |
+| **Wix Developer Center** | Login password | `Pillars123@#$` |
 | **Wix Developer Center** | App name | Wix-HubSpot Integration |
 | **Wix Developer Center** | App ID | `8622be65-c66b-45d4-8b58-5afd938335ba` |
-| **Wix Test Site** | Site URL | `_________________________` |
-| **HubSpot Developer** | Login email | `_________________________` |
-| **HubSpot Developer** | Login password | `_________________________` |
-| **HubSpot Test Portal** | Portal ID | `_________________________` |
-| **MongoDB Atlas** | Connection string (`.env` only) | *See `.env.example`* |
-| **Server URL** | Deployed / ngrok URL | `_________________________` |
+| **Wix Test Site** | Site URL | Dev site 1 (Stores V3) — accessible from Wix Studio dashboard |
+| **HubSpot Developer** | Login email | `nehemiahandrew78@gmail.com` |
+| **HubSpot Developer** | Login password | `Pillars123@#$` |
+| **HubSpot Test Portal** | Portal ID | `147868769` (App ID: `32093126`) |
+| **MongoDB Atlas** | Connection string | `mongodb+srv://wixhubbuild:JPWthd1UPrU4ZmfX@cluster0.na1uoow.mongodb.net/wix-hubspot-integration` |
+| **Server URL** | ngrok tunnel (dev) | `https://nontangentially-tristichic-suellen.ngrok-free.dev` |
 
 ---
 
