@@ -175,8 +175,8 @@ Built as a **Self-Hosted Wix App** using **TypeScript**, Node.js, Express, React
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/<your-username>/wix-hubspot-integration.git
-cd wix-hubspot-integration
+git clone https://github.com/NehemiahAndrew/Wiix-CLI-ASSMNT.git
+cd Wiix-CLI-ASSMNT
 npm install
 ```
 
