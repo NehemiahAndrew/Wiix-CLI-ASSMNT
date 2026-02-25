@@ -20,6 +20,7 @@
 // =============================================================================
 import { createClient, OAuthStrategy } from '@wix/sdk';
 import Installation from '../models/Installation';
+import OAuthState from '../models/OAuthState';
 import { encryptTokens, decryptTokens } from '../utils/tokenEncryption';
 import config from '../config';
 import logger from '../utils/logger';
@@ -76,39 +77,21 @@ function getWixClient() {
 }
 
 /**
- * In-memory store for short-lived CSRF state values.
- * These live only for the duration of the OAuth flow (seconds to minutes).
- * In a multi-instance deployment, a shared store (Redis/DB) would be used.
- *
- * Entries auto-expire after 10 minutes.
- */
-const stateCache = new Map<string, string>();
-
-/**
- * Store a secret value in Wix Secrets Manager (and in-memory cache).
- * Creates or updates the secret under the given key name.
- * The in-memory cache ensures CSRF state values survive the OAuth round-trip.
+ * Store a secret value (CSRF nonces, etc.) in MongoDB.
+ * Uses the OAuthState collection with a TTL index (auto-expires in 10 min).
+ * This survives server restarts — critical for Render/cloud deployments.
  */
 export async function storeSecret(
   key: string,
   value: string,
 ): Promise<void> {
   try {
-    // Write to in-memory cache so getSecret can retrieve it
-    stateCache.set(key, value);
-    // Auto-expire after 10 minutes to prevent memory leaks
-    setTimeout(() => stateCache.delete(key), 10 * 60 * 1000);
-
-    // For self-hosted apps, Wix Secrets are managed through the REST API.
-    // We store secrets locally encrypted + in the Installation model
-    // as the primary secure store, using the secret key for correlation.
-    //
-    // In production with full Wix Secrets API access, this would call:
-    //   wixClient.secrets.createSecret({ name: key, value })
-    //
-    // For now, we persist via the encrypted Installation model which
-    // provides AES-256-GCM encryption at rest (same security guarantee).
-    logger.debug('Secret stored', { key: key.replace(/_[a-f0-9]+$/i, '_***') });
+    await OAuthState.findOneAndUpdate(
+      { key },
+      { key, value, createdAt: new Date() },
+      { upsert: true, new: true },
+    );
+    logger.debug('Secret stored in DB', { key: key.replace(/_[a-f0-9]+$/i, '_***') });
   } catch (err) {
     logger.error('Failed to store secret', {
       key: key.replace(/_[a-f0-9]+$/i, '_***'),
@@ -119,15 +102,12 @@ export async function storeSecret(
 }
 
 /**
- * Retrieve a secret value from Wix Secrets Manager.
+ * Retrieve a secret value from MongoDB.
  */
 export async function getSecret(key: string): Promise<string | null> {
   try {
-    // In the self-hosted model, secrets are stored in the Installation
-    // document with AES-256-GCM encryption. We route through the model.
-    // For CSRF state values, we use an in-memory cache.
-    const cached = stateCache.get(key);
-    return cached ?? null;
+    const doc = await OAuthState.findOne({ key });
+    return doc?.value ?? null;
   } catch (err) {
     logger.error('Failed to retrieve secret', {
       key: key.replace(/_[a-f0-9]+$/i, '_***'),
@@ -138,12 +118,12 @@ export async function getSecret(key: string): Promise<string | null> {
 }
 
 /**
- * Delete a secret from Wix Secrets Manager.
+ * Delete a secret from MongoDB.
  */
 export async function deleteSecret(key: string): Promise<void> {
   try {
-    stateCache.delete(key);
-    logger.debug('Secret deleted', { key: key.replace(/_[a-f0-9]+$/i, '_***') });
+    await OAuthState.deleteOne({ key });
+    logger.debug('Secret deleted from DB', { key: key.replace(/_[a-f0-9]+$/i, '_***') });
   } catch (err) {
     logger.error('Failed to delete secret', {
       key: key.replace(/_[a-f0-9]+$/i, '_***'),
@@ -152,7 +132,7 @@ export async function deleteSecret(key: string): Promise<void> {
   }
 }
 
-// Alias for backward compatibility — storeSecret now handles cache directly
+// Alias for backward compatibility
 export const storeSecretWithCache = storeSecret;
 
 // ─────────────────────────────────────────────────────────────────────────────

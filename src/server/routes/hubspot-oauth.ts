@@ -5,10 +5,12 @@
 // GET  /api/hubspot/callback     → Exchange code for tokens, encrypt & store
 // =============================================================================
 import { Router, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { getAuthorizationUrl, handleCallback } from '../services/hubspotOAuth';
 import { ensureRequiredProperties } from '../services/hubspotProperties';
 import { registerWebhookSubscriptions } from '../services/hubspotWebhookRegistration';
 import FieldMapping, { DEFAULT_FIELD_MAPPINGS } from '../models/FieldMapping';
+import config from '../config';
 import logger from '../utils/logger';
 import authMiddleware from '../utils/authMiddleware';
 
@@ -77,20 +79,20 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
 
     logger.info('HubSpot OAuth complete', { instanceId, portalId });
 
-    // Success page — tells opener to refresh, then closes the popup
-    res.send(`
-      <html><body>
-        <h2>Connected to HubSpot!</h2>
-        <p>Portal ID: ${portalId || 'unknown'}</p>
-        <p>You can close this window and return to your Wix dashboard.</p>
-        <script>
-          if (window.opener) { window.opener.postMessage({ type: 'HUBSPOT_CONNECTED' }, '*'); window.close(); }
-        </script>
-      </body></html>
-    `);
+    // Generate a JWT so the user lands on an authenticated dashboard
+    const token = jwt.sign({ instanceId }, config.jwtSecret, { expiresIn: '2h' });
+
+    // Redirect to the dashboard with the auth token
+    res.redirect(`${config.baseUrl}/?instance=${token}`);
   } catch (err) {
     logger.error('HubSpot OAuth callback failed', { error: (err as Error).message });
-    res.status(500).send('OAuth failed. Please try again.');
+    res.status(500).send(`
+      <html><body>
+        <h2>OAuth Failed</h2>
+        <p>${(err as Error).message}</p>
+        <p><a href="${config.baseUrl}/dashboard">Try again from the dashboard</a></p>
+      </body></html>
+    `);
   }
 });
 
