@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wix–HubSpot Integration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root">
+      <!-- Pre-React loading indicator (replaced once React mounts) -->
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#555">
+        <div style="text-align:center">
+          <div style="width:40px;height:40px;border:3px solid #e0e0e0;border-top:3px solid #3899ec;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px"></div>
+          <div>Loading dashboard…</div>
+        </div>
+      </div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    </div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
+</html>

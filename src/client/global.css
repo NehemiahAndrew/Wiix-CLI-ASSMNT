@@ -1,0 +1,31 @@
+/* =============================================================================
+   Global Styles — Wix Design System Overrides & Minimal Resets
+   ============================================================================= */
+
+/* The main WDS global CSS is imported in App.tsx via:
+   import '@wix/design-system/styles.global.css';
+   This file only adds minimal project-specific overrides. */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f0f4f7;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Lightweight overrides for WDS Notification — ensure it's visible & fixed */
+.wds-notification-wrapper {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+}
