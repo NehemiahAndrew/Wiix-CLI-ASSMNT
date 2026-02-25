@@ -4,15 +4,15 @@
   "description": "Wix <-> HubSpot bi-directional contact sync & form/lead capture (Self-Hosted App)",
   "main": "dist/server/index.js",
   "scripts": {
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "dev": "node init && concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "tunnel": "node scripts/tunnel.mjs",
     "dev:tunnel": "concurrently \"npm run server:dev\" \"npm run client:dev\" \"npm run tunnel\"",
     "server:dev": "ts-node-dev --respawn --transpile-only --project tsconfig.server.json src/server/index.ts",
     "client:dev": "vite --config vite.config.ts",
     "build:server": "tsc -p tsconfig.server.json",
     "build:client": "vite build --config vite.config.ts",
-    "build": "npm run build:server && npm run build:client",
-    "start": "node dist/server/index.js",
+    "build": "node init && npm run build:server && npm run build:client",
+    "start": "node init && node dist/server/index.js",
     "test": "jest --coverage --passWithNoTests",
     "lint": "tsc --noEmit"
   },
