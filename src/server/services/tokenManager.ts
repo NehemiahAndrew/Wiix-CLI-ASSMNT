@@ -223,11 +223,16 @@ export async function storeTokens(
  * automatically refreshed BEFORE being returned. This ensures every
  * caller receives a usable token without worrying about expiry.
  *
- * @param instanceId — Wix site instance
- * @returns          — A valid, decrypted access token
- * @throws           — If no tokens are stored or refresh fails
+ * @param instanceId   — Wix site instance
+ * @param forceRefresh — If true, skip the expiry check and refresh immediately
+ *                       (used by withRetry on 401 to handle clock-skew / stale tokens)
+ * @returns            — A valid, decrypted access token
+ * @throws             — If no tokens are stored or refresh fails
  */
-export async function getAccessToken(instanceId: string): Promise<string> {
+export async function getAccessToken(
+  instanceId: string,
+  forceRefresh = false,
+): Promise<string> {
   const installation = await Installation.findOne({ instanceId });
 
   if (
@@ -244,6 +249,14 @@ export async function getAccessToken(instanceId: string): Promise<string> {
     refreshToken: installation.hubspotRefreshToken,
     tokenIv: installation.hubspotTokenIv,
   });
+
+  // ── Forced refresh (e.g. after 401 from HubSpot) ─────────────────────
+  if (forceRefresh) {
+    logger.info('Force-refreshing HubSpot access token (401 recovery)', { instanceId });
+    const { refreshAccessToken } = await import('./hubspotOAuth');
+    const refreshed = await refreshAccessToken(instanceId, decrypted.refreshToken);
+    return refreshed.accessToken;
+  }
 
   const expiresAt = installation.hubspotTokenExpiresAt;
   const now = Date.now();

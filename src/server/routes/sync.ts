@@ -143,6 +143,7 @@ router.get('/contacts', async (req: Request, res: Response): Promise<void> => {
     // Fetch HubSpot contact details for all mapped contacts in one batch
     const hubspotIds = mappings.map((m) => m.hubspotContactId).filter(Boolean);
     let hubspotContacts: Record<string, any> = {};
+    let hubspotError: string | null = null;
     if (hubspotIds.length > 0 && req.installation?.connected) {
       try {
         const hsResults = await batchReadContacts(
@@ -153,11 +154,24 @@ router.get('/contacts', async (req: Request, res: Response): Promise<void> => {
         for (const hc of hsResults) {
           hubspotContacts[String(hc.id)] = hc.properties ?? {};
         }
+        logger.info('Batch read HubSpot contacts succeeded', {
+          instanceId,
+          requested: hubspotIds.length,
+          returned: hsResults.length,
+          sampleKeys: hsResults.length > 0 ? Object.keys(hsResults[0].properties ?? {}).join(',') : 'none',
+        });
       } catch (err) {
+        hubspotError = (err as Error).message;
         logger.warn('Failed to batch-read HubSpot contacts for list', {
-          error: (err as Error).message,
+          error: hubspotError,
         });
       }
+    } else {
+      logger.info('Skipped HubSpot batch read', {
+        instanceId,
+        hubspotIdsCount: hubspotIds.length,
+        connected: req.installation?.connected,
+      });
     }
 
     // Build the response
@@ -186,7 +200,7 @@ router.get('/contacts', async (req: Request, res: Response): Promise<void> => {
       );
     }
 
-    res.json({ contacts, total, page, pages });
+    res.json({ contacts, total, page, pages, ...(hubspotError ? { hubspotError } : {}) });
   } catch (err) {
     logger.error('Contacts list error', { error: (err as Error).message });
     res.status(500).json({ error: 'Failed to fetch contacts' });

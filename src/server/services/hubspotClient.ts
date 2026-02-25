@@ -43,8 +43,9 @@ const BACKOFF_BASE_MS = 1_000;
  */
 export async function createHubSpotClient(
   instanceId: string,
+  forceRefresh = false,
 ): Promise<AxiosInstance> {
-  const accessToken = await getAccessToken(instanceId);
+  const accessToken = await getAccessToken(instanceId, forceRefresh);
 
   return axios.create({
     baseURL: HUBSPOT_API_BASE,
@@ -84,21 +85,24 @@ export async function withRetry<T = any>(
 ): Promise<AxiosResponse<T>> {
   let lastError: Error | undefined;
 
+  let tokenRefreshed = false;
+
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const client = await createHubSpotClient(instanceId);
+      const client = await createHubSpotClient(instanceId, tokenRefreshed);
       return await fn(client);
     } catch (err) {
       lastError = err as Error;
       const axErr = err as AxiosError;
       const status = axErr.response?.status;
 
-      // ── Token expired mid-request → refresh and retry once ────────────
-      if (status === 401 && attempt === 0) {
-        logger.warn('HubSpot 401 — token may have expired, retrying with fresh token', {
+      // ── Token expired / invalid → force-refresh and retry once ────────
+      if (status === 401 && !tokenRefreshed) {
+        logger.warn('HubSpot 401 — forcing token refresh and retrying', {
           instanceId,
           attempt,
         });
+        tokenRefreshed = true;
         continue;
       }
 
