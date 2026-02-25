@@ -19,7 +19,8 @@ This document provides everything needed to test the Wix ↔ HubSpot Integration
 | **HubSpot Developer** | Login password | `Pillars123@#$` |
 | **HubSpot Test Portal** | Portal ID | `147868769` (App ID: `32093126`) |
 | **MongoDB Atlas** | Connection string | `mongodb+srv://wixhubbuild:JPWthd1UPrU4ZmfX@cluster0.na1uoow.mongodb.net/wix-hubspot-integration` |
-| **Server URL** | ngrok tunnel (dev) | `https://nontangentially-tristichic-suellen.ngrok-free.dev` |
+| **Server URL (Production)** | Render | `https://wiix-cli-assmnt.onrender.com` |
+| **Server URL (Dev tunnel)** | ngrok | `https://nontangentially-tristichic-suellen.ngrok-free.dev` |
 
 ---
 
